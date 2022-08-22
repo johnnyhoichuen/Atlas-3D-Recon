@@ -11,7 +11,7 @@ Andrew Rabinovich
 
 <img src='imgs/AtlasGIF.gif'/>
 <img src='imgs/figure1.jpg'/>
-
+ 
 ## Quickstart
 We provide a [Colab Notebook](https://colab.research.google.com/drive/19_kJSkrQqPhQGIWpEpbZlk48b8p5ZRTO?usp=sharing) to try inference.
 
