@@ -20,6 +20,8 @@ import os
 import numpy as np
 import torch
 
+from open3d import *
+
 from atlas.data import SceneDataset, parse_splits_list
 from atlas.model import VoxelNet
 import atlas.transforms as transforms
@@ -105,6 +107,7 @@ def process(info_file, model, num_frames, save_path, total_scenes_index, total_s
 
     tsdf_pred.save(os.path.join(save_path, '%s.npz'%scene))
     mesh_pred.export(os.path.join(save_path, '%s.ply'%scene))
+    mesh_pred.export(os.path.join(save_path, '%s.obj'%scene))
 
 
 
@@ -116,8 +119,11 @@ def main():
                         help="which scene(s) to run on")
     parser.add_argument("--num_frames", default=-1, type=int,
                         help="number of frames to use (-1 for all)")
-    parser.add_argument("--voxel_dim", nargs=3, default=[-1,-1,-1], type=int,
+    parser.add_argument("--voxel_dim", nargs=3, default=[208, 208, 80], type=int,
+    # parser.add_argument("--voxel_dim", nargs=3, default=[416, 416, 100], type=int,
+    # parser.add_argument("--voxel_dim", nargs=3, default=[-1, -1, -1], type=int,  # original
                         help="override voxel dim")
+    parser.add_argument("--save_path", required=True)
     args = parser.parse_args()
 
     # get all the info_file.json's from the command line
@@ -131,12 +137,16 @@ def main():
     # overwrite default values of voxel_dim_test
     if args.voxel_dim[0] != -1:
         model.voxel_dim_test = args.voxel_dim
-    # TODO: implement voxel_dim_test
     model.voxel_dim_val = model.voxel_dim_test
 
     model_name = os.path.splitext(os.path.split(args.model)[1])[0]
-    save_path = os.path.join(model.cfg.LOG_DIR, model.cfg.TRAINER.NAME,
-                             model.cfg.TRAINER.VERSION, 'test_'+model_name)
+    save_path = args.save_path
+    # save_path = os.path.join(model.cfg.LOG_DIR, model.cfg.TRAINER.NAME,
+    #                          model.cfg.TRAINER.VERSION, 'test_'+model_name)
+    # print(f'model.cfg.LOG_DIR, model.cfg.TRAINER.NAME, model.cfg.TRAINER.VERSION, test_(model_name):\n'
+    #       f'{model.cfg.LOG_DIR, model.cfg.TRAINER.NAME, model.cfg.TRAINER.VERSION, model_name}')
+    # output: ('results', 'release', 'semseg', 'final')
+
     if args.num_frames>-1:
         save_path = '%s_%d'%(save_path, args.num_frames)
     os.makedirs(save_path, exist_ok=True)
@@ -144,6 +154,9 @@ def main():
     for i, info_file in enumerate(info_files):
         # run model on each scene
         process(info_file, model, args.num_frames, save_path, i, len(info_files))
+
+    # cloud = open3d.cuda.pybind.io.read_point_cloud("results/release/semseg/test_final/sample1.ply") # Read the point cloud
+    # open3d.visualization.draw_geometries([cloud]) # Visualize the point cloud
 
 if __name__ == "__main__":
     main()

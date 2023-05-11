@@ -196,8 +196,18 @@ def main():
     visualize(rslt_file)
 
 if __name__ == "__main__":
-    main()
+    # main()
 
+    parser = argparse.ArgumentParser(description="evaluation")
+    parser.add_argument("--pred_path", required=True)
+    parser.add_argument("--gt_path", required=True)
+    args = parser.parse_args()
+    #
+    # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
+    # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_iphone/result-crop.ply"  # iphone
+    # gt_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/data/ust_conf_iphone/gt/iphone_atlas_ground_truth_1.pcd" # temporary gt
+    mesh_metrics = eval_mesh(file_pred=args.pred_path, file_trgt=args.gt_path)
+    print(f'mesh metrics: {mesh_metrics}')
 
 
     # # zip up semseg results for benchmark submission

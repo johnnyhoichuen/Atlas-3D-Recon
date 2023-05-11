@@ -71,6 +71,7 @@ def fuse_scene(path_meta, scene, voxel_size, trunc_ratio=3, max_depth=3,
 
     # get the dataset
     transform = transforms.Compose([transforms.ResizeImage((640,480)),
+    # transform = transforms.Compose([transforms.ResizeImage((480,480)),
                                     transforms.ToTensor(),
                                     transforms.InstanceToSemseg('nyu40'),
                                     transforms.IntrinsicsPoseToProjection(),
@@ -304,19 +305,23 @@ def prepare_scannet(path, path_meta, i=0, n=1, test_only=False, max_depth=3):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Fuse ground truth tsdf on Scannet')
     parser.add_argument("--path", required=True, metavar="DIR",
-        help="path to raw dataset")
+                        help="path to raw dataset")
     parser.add_argument("--path_meta", required=True, metavar="DIR",
-        help="path to store processed (derived) dataset")
+                        help="path to store processed (derived) dataset")
     parser.add_argument("--dataset", required=True, type=str,
-        help="which dataset to prepare")
+                        help="which dataset to prepare")
+    parser.add_argument("--img_dir", required=True, type=str,
+                        help="which img files to prepare")
+    parser.add_argument("--pose_dir", required=True, type=str,
+                        help="which pose files to prepare")
     parser.add_argument('--i', default=0, type=int,
-        help='index of part for parallel processing')
+                        help='index of part for parallel processing')
     parser.add_argument('--n', default=1, type=int,
-        help='number of parts to devide data into for parallel processing')
+                        help='number of parts to devide data into for parallel processing')
     parser.add_argument('--test', action='store_true',
-        help='only prepare the test set (for rapid testing if you dont plan to train)')
+                        help='only prepare the test set (for rapid testing if you dont plan to train)')
     parser.add_argument('--max_depth', default=3., type=float,
-        help='mask out large depth values since they are noisy')
+                        help='mask out large depth values since they are noisy')
     args = parser.parse_args()
 
     i=args.i
@@ -327,11 +332,13 @@ if __name__ == "__main__":
         scenes = ['sample1']
         scenes = scenes[i::n] # distribute among workers
         for scene in scenes:
+            print(f'scene: {scene}')
             prepare_sample_scene(
                 scene,
                 os.path.join(args.path, 'sample'),
                 os.path.join(args.path_meta, 'sample'),
             )
+        exit()
 
     elif args.dataset == 'scannet':
         prepare_scannet(
@@ -342,6 +349,15 @@ if __name__ == "__main__":
             args.test,
             args.max_depth
         )
+    else:  # custom dataset
+        print(f'using dataset: {args.dataset}')
+        prepare_sample_scene(
+            img_dir=args.img_dir,
+            pose_dir=args.pose_dir,
+            dataset=args.dataset,
+            dataset_path=os.path.join(args.path, args.dataset),
+            path_meta=os.path.join(args.path_meta, args.dataset),
+        )
 
     # elif args.dataset == 'rio':
     #     prepare_rio(
@@ -351,5 +367,5 @@ if __name__ == "__main__":
     #         n
     #     )
 
-    else:
-        raise NotImplementedError('unknown dataset %s'%args.dataset)
+    # else:
+    #     raise NotImplementedError('unknown dataset %s'%args.dataset)
