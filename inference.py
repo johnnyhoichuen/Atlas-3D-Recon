@@ -119,8 +119,8 @@ def main():
                         help="which scene(s) to run on")
     parser.add_argument("--num_frames", default=-1, type=int,
                         help="number of frames to use (-1 for all)")
-    parser.add_argument("--voxel_dim", nargs=3, default=[208, 208, 80], type=int,
-    # parser.add_argument("--voxel_dim", nargs=3, default=[416, 416, 100], type=int,
+    parser.add_argument("--voxel_dim", nargs=3, default=[208, 208, 80], type=int, # saving GPU memory
+    # parser.add_argument("--voxel_dim", nargs=3, default=[416, 416, 80], type=int,
     # parser.add_argument("--voxel_dim", nargs=3, default=[-1, -1, -1], type=int,  # original
                         help="override voxel dim")
     parser.add_argument("--save_path", required=True)

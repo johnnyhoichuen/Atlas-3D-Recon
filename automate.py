@@ -1,6 +1,7 @@
 import argparse
 import shlex
 import subprocess
+import time
 
 from atlas.evaluation import eval_mesh
 
@@ -9,21 +10,25 @@ if __name__ == "__main__":
     # # parser.add_argument("")
     # args = parser.parse_args()
 
+    # data selection
+    dataset, img_dir, pose_dir, gt_path = "ust_conf3_icp_opvs", "ust_conf_3", "opvs_s0.8", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # todo: generate gt for ust_conf_3
+    # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "direct", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose  # iphone with direct pose
+    # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "from_quat", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose   # iphone with quat pose, (not yet tested)
+
     ###########################################################
     ## prepare data
     ###########################################################
-    # dataset, color, pose_dir = "ust_conf3_icp_opvs", "ust_conf_3", "opvs_original"
-    dataset, img_dir, pose_dir = "ust_conf_iphone", "iphone", "direct"  # iphone with direct pose
-    # dataset, img_dir, pose_dir = "ust_conf_iphone", "iphone", "from_quat"  # iphone with quat pose
     subprocess.run(shlex.split(f"python3 prepare_data.py --path data --path_meta meta --dataset {dataset} "
                                f"--img_dir {img_dir} --pose_dir {pose_dir}"))
 
     ###########################################################
     ## inference
     ###########################################################
+    start_time = time.time()
     subprocess.run(shlex.split(f'python3 inference.py --model results/release/semseg/final.ckpt '
                                f'--scenes meta/{dataset}/info.json '
                                f'--save_path results/{dataset}/{pose_dir}'))
+    print(f'inference time used (voxel dim: [208, 208, 80]): {time.time() - start_time}s')
 
     ###########################################################
     ## evaluate
@@ -35,7 +40,7 @@ if __name__ == "__main__":
 
     # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
     pred_path = f"results/ust_conf_iphone/{pose_dir}/{dataset}.ply"  # iphone
-    gt_path = "data/ust_conf_iphone/gt/gt_1.ply" # temporary gt
+    # gt_path = "data/ust_conf_iphone/gt/gt_1.ply" # temporary gt, unadjusted pose
     mesh_metrics = eval_mesh(file_pred=pred_path, file_trgt=gt_path)
     print(f'mesh metrics: {mesh_metrics}')
 
