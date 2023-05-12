@@ -181,6 +181,8 @@ class EncoderDecoder(nn.Module):
 
 
     def forward(self, x):
+        # print(f'raw x shape: {x.shape}')
+
         if self.cond_proj:
             valid_mask = (x!=0).any(1, keepdim=True).float()
 
@@ -192,6 +194,10 @@ class EncoderDecoder(nn.Module):
 
         xs = xs[::-1]
         out = []
+
+        # # print(f'xs: {xs.shape}')
+        # print(f'len(self.layers_up_conv): {len(self.layers_up_conv)}')
+
         for i in range(len(self.layers_up_conv)):
             x = F.interpolate(x, scale_factor=2, mode='trilinear', align_corners=False)
             x = self.layers_up_conv[i](x)
@@ -201,6 +207,9 @@ class EncoderDecoder(nn.Module):
             else:
                 mask = None
             y = self.proj[i](xs[i+1], x, mask)
+            #
+            # print(f'x: {x.shape}')
+            # print(f'y: {y.shape}')
             x = (x + y)/2
             x = self.layers_up_res[i](x)
 

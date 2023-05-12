@@ -89,11 +89,12 @@ class VoxelNet(pl.LightningModule):
     def __init__(self, hparams):
         super().__init__()
 
-        # see config.py for details
-        self.hparams = hparams
+        # # see config.py for details
+        # self.hparams = hparams
 
         # pytorch lightning does not support saving YACS CfgNone     
-        self.cfg = CfgNode(self.hparams)
+        # self.cfg = CfgNode(self.hparams)
+        self.cfg = CfgNode(hparams)
         cfg = self.cfg
 
         # networks
