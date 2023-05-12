@@ -11,7 +11,7 @@ Andrew Rabinovich
 
 <img src='imgs/AtlasGIF.gif'/>
 <img src='imgs/figure1.jpg'/>
- 
+
 ## Quickstart
 We provide a [Colab Notebook](https://colab.research.google.com/drive/19_kJSkrQqPhQGIWpEpbZlk48b8p5ZRTO?usp=sharing) to try inference.
 
@@ -20,15 +20,36 @@ We provide a docker image `Docker/Dockerfile` with all the dependencies.
 
 Or you can install them yourself:
 ```
-conda install -y pytorch=1.5.0 torchvision=0.6.0 cudatoolkit=10.2 -c pytorch
-conda install opencv
+not working for some reason: 
+# conda install -y pytorch=1.5.0 torchvision=0.6.0 cudatoolkit=10.2 -c pytorch
+conda install -y pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch # RTX 3090
+conda install -y opencv
 pip install \
   open3d>=0.10.0.0 \
   trimesh>=3.7.6 \
   pyquaternion>=0.9.5 \
   pytorch-lightning>=0.8.5 \
-  pyrender>=0.1.43
-python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.5/index.html
+  pyrender>=0.1.43 \
+  scikit-image
+  
+# cuda 10.2 & torch 1.5
+# python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu102/torch1.5/index.html
+# cuda 11.3 & torch 1.10
+pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
+
+# possible errors
+# from fvcore.common.config import CfgNode as _CfgNode
+#   ModuleNotFoundError: No module named 'fvcore'
+pip install -U 'git+https://github.com/facebookresearch/fvcore'
+
+# example script
+ conda create -n atlas-6 python=3.8
+ conda activate atlas-6
+ conda install -y pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
+ conda install -y opencv
+ pip install open3d
+
+
 ```
 For 16bit mixed precision (default training setting) you will also need [NVIDIA apex](https://github.com/NVIDIA/apex)
 ```
