@@ -1,0 +1,22 @@
+dataset: 'ust_conf3_icp_opvs'
+img_dir: 'ust_conf_3'
+pose_dir: 'opvs_s0.8'
+gt_path_prefix: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD' # real path: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD.ply'
+#gt_path: '' # gt_path_prefix + fine_tune_params + .ply
+
+# gt fine tuning
+# set this as prefix instead of full path as fine-tune params will be added in the name
+# pred_path: 'results/ust_conf3_icp_opvs/opvs_s0.8/ust_conf3_icp_opvs.ply' # = "results/{dataset}/{pose_dir}/{dataset}.ply"
+
+# manual adjustment of GT (do this before fine-tuning)
+manual_rotate: [90, -5, 0] # x, z, y axis in meshlab
+manual_translate: [2.6, 3.0, 0.65]
+manual_scale: [0.65] # for pred opvs_s0.8
+
+# fine-tuning transform params
+x_range: [2.55, 2.6, 2.65]
+y_range: [2.95, 3.0, 3.05]
+z_range: [0.6, 0.65, 0.7]
+scales: [0.6, 0.65, 0.7] # for pred opvs_s0.8
+
+fine_tuned_params: [2.6, 3.0, 0.65, 0.65] # contains the [tx, ty, tz, scale] with the best f-score

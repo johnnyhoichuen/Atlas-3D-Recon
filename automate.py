@@ -2,18 +2,40 @@ import argparse
 import shlex
 import subprocess
 import time
+import yaml
 
 from atlas.evaluation import eval_mesh
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="prepare data + inference")
-    # # parser.add_argument("")
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="prepare data + inference")
+    parser.add_argument("--config", help="config file of the dataset")
+    args = parser.parse_args()
 
-    # data selection
-    dataset, img_dir, pose_dir, gt_path = "ust_conf3_icp_opvs", "ust_conf_3", "opvs_s0.8", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # todo: generate gt for ust_conf_3
-    # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "direct", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose  # iphone with direct pose
-    # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "from_quat", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose   # iphone with quat pose, (not yet tested)
+    with open(args.config, 'r') as f:
+        config = yaml.safe_load(f)
+        print(f'config: {config}')
+
+    dataset = config['dataset']
+
+    # inference
+    img_dir = config['img_dir']
+    pose_dir = config['pose_dir']
+
+    # eval
+    pred_path = f'results/{dataset}/{pose_dir}/{dataset}.ply'
+    fine_tuned_params = config['fine_tuned_params'] # tx, ty, tz, scale
+    gt_path_prefix = config['gt_path_prefix']
+    gt_path = f'{gt_path_prefix}_{fine_tuned_params[:3]}_s{fine_tuned_params[3]}.ply'
+
+    # print(f'img dir: {img_dir}')
+    # print(f'pose dir: {pose_dir}')
+    # print(f'pred path: {pred_path}')
+    # print(f'gt path: {gt_path}')
+
+    # # data selection
+    # dataset, img_dir, pose_dir, gt_path = "ust_conf3_icp_opvs", "ust_conf_3", "opvs_s0.8", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # todo: generate gt for ust_conf_3
+    # # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "direct", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose  # iphone with direct pose
+    # # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "from_quat", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose   # iphone with quat pose, (not yet tested)
 
     ###########################################################
     ## prepare data
@@ -30,21 +52,21 @@ if __name__ == "__main__":
                                f'--save_path results/{dataset}/{pose_dir}'))
     print(f'inference time used (voxel dim: [208, 208, 80]): {time.time() - start_time}s')
 
-    ###########################################################
-    ## evaluate
-    ###########################################################
-
-    # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
-    # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_iphone/result-crop.ply"  # iphone
-    # gt_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/data/ust_conf_iphone/gt/iphone_atlas_ground_truth_1.pcd" # temporary gt
-
-    # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
-    pred_path = f"results/ust_conf_iphone/{pose_dir}/{dataset}.ply"  # iphone
-    # gt_path = "data/ust_conf_iphone/gt/gt_1.ply" # temporary gt, unadjusted pose
+    # ###########################################################
+    # ## evaluate
+    # ###########################################################
+    #
+    # # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
+    # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_iphone/result-crop.ply"  # iphone
+    # # gt_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/data/ust_conf_iphone/gt/iphone_atlas_ground_truth_1.pcd" # temporary gt
+    #
+    # # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
+    # pred_path = f"results/{dataset}/{pose_dir}/{dataset}.ply"  # iphone
+    # # gt_path = "data/ust_conf_iphone/gt/gt_1.ply" # temporary gt, unadjusted pose
     mesh_metrics = eval_mesh(file_pred=pred_path, file_trgt=gt_path)
     print(f'mesh metrics: {mesh_metrics}')
 
-    ###################################
+    # ###################################
 
     # openvslam
     # pose = np.loadtxt(os.path.join(path, dataset, 'ust_conf3_icp_opvs/opvs_original_pose', '%08d.txt' % frame_id))

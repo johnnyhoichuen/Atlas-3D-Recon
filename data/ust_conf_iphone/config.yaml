@@ -1,0 +1,22 @@
+dataset: 'ust_conf_iphone'
+img_dir: 'iphone'
+pose_dir: 'direct'
+gt_path_prefix: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD' # real path: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD.ply'
+#gt_path = f'{gt_path_prefix}_{fine_tuned_params[:3]}_s{fine_tuned_params[3]}.ply'
+
+# gt fine tuning
+# set this as prefix instead of full path as fine-tune params will be added in the name
+# pred_path: 'results/ust_conf3_icp_opvs/opvs_s0.8/ust_conf3_icp_opvs.ply' # = "results/{dataset}/{pose_dir}/{dataset}.ply"
+
+# manual adjustment of GT (do this before fine-tuning)
+manual_rotate: [90, -90, 0] # x, z, y axis in meshlab
+manual_translate: [2.6, 3.0, 0.65]
+manual_scale: [0.65] # for pred opvs_s0.8
+
+# fine-tuning transform params
+x_range: [2.85, 2.90, 2.95]
+y_range: [4.40, 4.45, 4.50]
+z_range: [0.65, 0.70, 0.75, 0.8]
+scales: [0.95, 1.0, 1.05] # for pred opvs_s0.8
+
+fine_tuned_params: [2.6, 3.0, 0.65, 0.65] # contains the [tx, ty, tz, scale] with the best f-score
