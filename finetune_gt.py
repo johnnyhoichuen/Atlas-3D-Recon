@@ -1,8 +1,12 @@
 import argparse
 import math
 import os.path
+import time
+
 import open3d as o3d
 import yaml
+import logging
+import json
 
 from atlas.evaluation import eval_mesh
 
@@ -11,12 +15,13 @@ def manual_adjust(config):
     pose_dir = config['pose_dir']
     pred_path = f'results/{dataset}/{pose_dir}/{dataset}.ply'
     gt_path_prefix = config['gt_path_prefix']
+    gt_density = config['gt_density']
 
     manual_rotate = config['manual_rotate']
     manual_translate = config['manual_translate']
     manual_scale = config['manual_scale']
 
-    pcd = o3d.io.read_point_cloud(f'{gt_path_prefix}.ply')
+    pcd = o3d.io.read_point_cloud(f'{gt_path_prefix}_{gt_density}.ply')
 
     # rotate
     rads = [math.radians(angle) for angle in manual_rotate] # x, z, y in meshlab, ust_conf_3
@@ -27,10 +32,11 @@ def manual_adjust(config):
     test_pcd = o3d.geometry.PointCloud(pcd).translate(manual_translate)
 
     # scale
+    # test_pcd.scale(manual_scale, center=test_pcd.get_center())
     test_pcd.scale(manual_scale, center=test_pcd.get_center())
 
     # write if needed
-    updated_gt_path = f'{gt_path_prefix}_{manual_translate}_s{manual_scale}.ply'
+    updated_gt_path = f'{gt_path_prefix}_{gt_density}_{manual_translate}_s{manual_scale}.ply'
     if not os.path.exists(updated_gt_path):
         o3d.io.write_point_cloud(updated_gt_path, test_pcd)
 
@@ -39,14 +45,19 @@ def manual_adjust(config):
     json_metrics["translation"] = manual_translate
     json_metrics["scale"] = manual_scale
 
-    print(f'mesh metrics from translation: {manual_translate}, scale: {manual_scale}: \n{json_metrics}\n')
+    logging.info(f'mesh metrics from translation: {manual_translate}, scale: {manual_scale}: \n{json_metrics}\n')
 
 def fine_tune(config):
+    start_time = time.time()
+    
     dataset = config['dataset']
     pose_dir = config['pose_dir']
     pred_path = f'results/{dataset}/{pose_dir}/{dataset}.ply'
     gt_path_prefix = config['gt_path_prefix']
-    original_gt_path = f'{gt_path_prefix}.ply'
+    gt_density = config['gt_density']
+    original_gt_path = f'{gt_path_prefix}_{gt_density}.ply'
+    print(pred_path)
+    print(original_gt_path)
 
     manual_rotate = config['manual_rotate'] # for now, we just eye-ball the right rotation in meshlab
     x_range = config['x_range']
@@ -65,7 +76,7 @@ def fine_tune(config):
     counter = 1
     total = len(x_range) * len(y_range) * len(z_range) * len(scales)
 
-    print(f'evaluating prediction: {pred_path}')
+    logging.info(f'evaluating prediction: {pred_path}')
 
     # iterate all possibilities to find the optimal f-score
     for x in x_range:
@@ -81,15 +92,17 @@ def fine_tune(config):
                     test_pcd.scale(scale, center=test_pcd.get_center())
 
                     # write if needed
-                    updated_gt_path = f'{gt_path_prefix}_{translation}_s{scale}.ply'
+                    updated_gt_path = f'{gt_path_prefix}_{gt_density}_{translation}_s{scale}.ply'
                     if not os.path.exists(updated_gt_path):
                         o3d.io.write_point_cloud(updated_gt_path, test_pcd)
 
                     # evaluate
                     json_metrics = eval_mesh(file_pred=pred_path, file_trgt=updated_gt_path)
                     json_metrics["translation"] = translation
+                    json_metrics["scale"] = scale
                     eval_results.append(json_metrics)
 
+                    logging.info(f'{counter}/{total} mesh metrics from translation: {translation}, scale: {scale}: \n{json_metrics}\n')
                     print(f'{counter}/{total} mesh metrics from translation: {translation}, scale: {scale}: \n{json_metrics}\n')
                     counter += 1
 
@@ -98,7 +111,10 @@ def fine_tune(config):
     for met in sorted_metrics:
         fscore = met['fscore']
         translation = met['translation']
-        print(f'{translation} fscore: {fscore}')
+        scale = met['scale']
+        logging.info(f'translation: {translation}, scale: {scale}, fscore: {fscore}')
+        
+    print(f'time used in finetuning gt: {time.time() - start_time}')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
@@ -108,7 +124,11 @@ if __name__ == "__main__":
     # load config file
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
-        print(f'config: {config}')
+        logging.info(f'config: {json.dumps(config, indent=2)}')
+        # print(f'config: {json.dumps(config, indent=2)}')
+
+    gt_density = config['gt_density']
+    logging.basicConfig(filename=f'{gt_density}.log', filemode='w', format='%(message)s')
 
     # # manual scaling
     # manual_adjust(config=config)

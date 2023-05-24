@@ -43,12 +43,82 @@ pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/
 pip install -U 'git+https://github.com/facebookresearch/fvcore'
 
 # example script
- conda create -n atlas-6 python=3.8
- conda activate atlas-6
+ conda create -n atlas-8 python=3.8
+ conda activate atlas-8
  conda install -y pytorch torchvision torchaudio cudatoolkit=11.3 -c pytorch
  conda install -y opencv
  pip install open3d
+ pip install pytorch-lightning
+ pip install -U 'git+https://github.com/facebookresearch/fvcore'
+ pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
 
+# atlas-7
+conda create -n atlas-7 python=3.8
+conda activate atlas-7
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3 -c pytorch
+
+# atlas-8
+conda create -n atlas-8 python=3.8
+conda activate atlas-8
+conda install -y opencv
+conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3 -c pytorch
+pip install open3d
+pip install pytorch-lightning
+pip install scikit-image
+pip install trimesh
+
+/home/guest1/anaconda3/envs/atlas-8/lib/python3.8/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: libc10_cuda.so: cannot open shared object file: No such file or directory
+  warn(f"Failed to load image Python extension: {e}")
+Traceback (most recent call last):
+  File "inference.py", line 27, in <module>
+    from atlas.model import VoxelNet
+  File "/home/guest1/Documents/johnny/3d-recon/atlas-fork/atlas/model.py", line 29, in <module>
+    from atlas.backbone2d import build_backbone2d
+  File "/home/guest1/Documents/johnny/3d-recon/atlas-fork/atlas/backbone2d.py", line 8, in <module>
+    from detectron2.layers import Conv2d, get_norm
+  File "/home/guest1/anaconda3/envs/atlas-8/lib/python3.8/site-packages/detectron2/layers/__init__.py", line 3, in <module>
+    from .deform_conv import DeformConv, ModulatedDeformConv
+  File "/home/guest1/anaconda3/envs/atlas-8/lib/python3.8/site-packages/detectron2/layers/deform_conv.py", line 11, in <module>
+    from detectron2 import _C
+ImportError: libc10_cuda.so: cannot open shared object file: No such file or directory
+
+# atlas-9 (pytorch 1.10)
+conda create -n atlas-9 python=3.8
+conda activate atlas-9
+conda install -y opencv
+pip install open3d
+conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=11.3 -c pytorch -c conda-forge
+pip install pytorch-lightning
+pip install scikit-image
+pip install trimesh
+
+# atlas-10 (pytorch 1.10)
+conda create -n atlas-10 python=3.8
+conda activate atlas-10
+conda install pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=11.3 -c pytorch -c conda-forge
+conda install -y opencv
+pip install open3d
+pip install pytorch-lightning
+pip install scikit-image
+pip install trimesh
+
+# atlas-11 (pytorch 1.10)
+conda create -n atlas-11 python=3.8
+conda activate atlas-11
+conda install -y pytorch==1.10.0 torchvision==0.11.0 torchaudio==0.10.0 cudatoolkit=11.3 -c pytorch -c conda-forge
+conda install -y opencv # (lib conflicts! but can solve and 2.31 is installed)
+pip install open3d
+pip install pytorch-lightning==1.7
+pip install scikit-image
+pip install trimesh
+pip install -U 'git+https://github.com/facebookresearch/fvcore'
+pip install detectron2==0.6 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu113/torch1.10/index.html
+(running automate.py)
+  File "/home/guest1/anaconda3/envs/atlas-11/lib/python3.8/site-packages/torch/utils/tensorboard/__init__.py", line 4, in <module>
+    LooseVersion = distutils.version.LooseVersion
+AttributeError: module 'distutils' has no attribute 'version'
+solution: https://github.com/pytorch/pytorch/issues/69894
+pip install setuptools==59.5.0
 
 ```
 For 16bit mixed precision (default training setting) you will also need [NVIDIA apex](https://github.com/NVIDIA/apex)
