@@ -1,7 +1,11 @@
 import argparse
+import csv
+import os.path
 import shlex
 import subprocess
 import time
+from pathlib import Path
+
 import yaml
 
 from atlas.evaluation import eval_mesh
@@ -9,33 +13,30 @@ from atlas.evaluation import eval_mesh
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="prepare data + inference")
     parser.add_argument("--config", help="config file of the dataset")
+    parser.add_argument("--num_frames_inference", type=int, default=2)
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
         print(f'config: {config}')
 
+    # prep data & inference input
     dataset = config['dataset']
-
-    # inference
     img_dir = config['img_dir']
     pose_dir = config['pose_dir']
 
-    # eval
-    pred_path = f'results/{dataset}/{pose_dir}/{dataset}.ply'
+    # number of frames used in inference.py
+    num_frames_inference = args.num_frames_inference
+
+    # eval input
+    if num_frames_inference == -1:
+        pred_path = f'results/{dataset}/{pose_dir}/{dataset}.ply'
+    else:
+        pred_path = f'results/{dataset}/{pose_dir}_{num_frames_inference}/{dataset}_{num_frames_inference}.ply'
     fine_tuned_params = config['fine_tuned_params'] # tx, ty, tz, scale
     gt_path_prefix = config['gt_path_prefix']
-    gt_path = f'{gt_path_prefix}_{fine_tuned_params[:3]}_s{fine_tuned_params[3]}.ply'
-
-    # print(f'img dir: {img_dir}')
-    # print(f'pose dir: {pose_dir}')
-    # print(f'pred path: {pred_path}')
-    # print(f'gt path: {gt_path}')
-
-    # # data selection
-    # dataset, img_dir, pose_dir, gt_path = "ust_conf3_icp_opvs", "ust_conf_3", "opvs_s0.8", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # todo: generate gt for ust_conf_3
-    # # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "direct", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose  # iphone with direct pose
-    # # dataset, img_dir, pose_dir, gt_path = "ust_conf_iphone", "iphone", "from_quat", "data/ust_conf_iphone/gt/test_low_density_[2.89, 4.5, 0.5].ply" # gt with adjusted pose   # iphone with quat pose, (not yet tested)
+    gt_density = config['gt_density']
+    gt_path = f'{gt_path_prefix}_{gt_density}_{fine_tuned_params[:3]}_s{fine_tuned_params[3]}.ply'
 
     ###########################################################
     ## prepare data
@@ -48,23 +49,34 @@ if __name__ == "__main__":
     ###########################################################
     start_time = time.time()
     subprocess.run(shlex.split(f'python3 inference.py --model results/release/semseg/final.ckpt '
-                               f'--scenes meta/{dataset}/info.json '
-                               f'--save_path results/{dataset}/{pose_dir}'))
-    print(f'inference time used (voxel dim: [208, 208, 80]): {time.time() - start_time}s')
+                               f'--scenes meta/{dataset}/info.json '  # rmb to add 1 extra at the end of this 
+                               f'--num_frames {num_frames_inference} '  # error: once not -1, it will not work
+                               f'--save_path results/{dataset}/{pose_dir} '
+                               ))
 
-    # ###########################################################
-    # ## evaluate
-    # ###########################################################
-    #
-    # # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
-    # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_iphone/result-crop.ply"  # iphone
-    # # gt_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/data/ust_conf_iphone/gt/iphone_atlas_ground_truth_1.pcd" # temporary gt
-    #
-    # # # pred_path = "/home/guest1/Documents/johnny/3d-recon/Atlas/results/ust_conf3_icp_opvs/opvs_s1.ply"  # 360 openvslam
-    # pred_path = f"results/{dataset}/{pose_dir}/{dataset}.ply"  # iphone
-    # # gt_path = "data/ust_conf_iphone/gt/gt_1.ply" # temporary gt, unadjusted pose
+    inference_time = time.time() - start_time
+    print(f'inference time used (voxel dim: [208, 208, 80]): {inference_time}s')
+
+    ###########################################################
+    ## evaluate
+    ###########################################################
     mesh_metrics = eval_mesh(file_pred=pred_path, file_trgt=gt_path)
     print(f'mesh metrics: {mesh_metrics}')
+
+    # save to csv
+    # csv_path = Path(f"results/{dataset}/metrics.csv")
+    csv_path = f"results/{dataset}/metrics.csv"
+    with open(csv_path, 'a') as f:
+        print(f'using csv')
+        writer = csv.writer(f)
+
+        # write header if csv doesn't exist
+        if f.tell() == 0:
+            writer.writerow(["num_frames", "time", "fscore", "dist1", "dist2", "prec", "recal"])
+
+        # write data
+        writer.writerow([args.num_frames_inference, inference_time, mesh_metrics['fscore'], mesh_metrics['dist1'], mesh_metrics['dist2'], mesh_metrics['prec'], mesh_metrics['recal']])
+
 
     # ###################################
 
