@@ -16,6 +16,7 @@
 
 import argparse
 import os
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -42,6 +43,13 @@ def process(info_file, model, num_frames, save_path, total_scenes_index, total_s
     voxel_scale = model.voxel_sizes[0]
     dataset = SceneDataset(info_file, voxel_sizes=[voxel_scale],
                            voxel_types=model.voxel_types, num_frames=num_frames)
+    # print(f'dataset type: {type(dataset)}')
+    # print(f'dataset len: {len(dataset)}')
+    # print(f'dataset: {dataset}')
+    # print(f'num_frames: {num_frames}')
+    # voxel_filename = 'file_name_vol_%02d'%voxel_scale
+    # print(f'voxel filename: {voxel_filename}')
+    # print(f'dataset info: {dataset.info}')
 
     # compute voxel origin
     if 'file_name_vol_%02d'%voxel_scale in dataset.info:
@@ -76,8 +84,8 @@ def process(info_file, model, num_frames, save_path, total_scenes_index, total_s
 
     for j, d in enumerate(dataloader):
 
-        # logging progress
-        if j%25==0:
+        # logging progress for every 100
+        if j % 100 == 0 or j == len(dataloader) - 1:
             print(total_scenes_index,
                   total_scenes_count,
                   dataset.info['dataset'],
@@ -104,10 +112,15 @@ def process(info_file, model, num_frames, save_path, total_scenes_index, total_s
                 **mesh_pred.vertex_attributes)
     else:
         mesh_pred = tsdf_pred.get_mesh()
+        
+    # print(f'tsdf pred: {tsdf_pred}')
+    # print(f'mesh_pred: {mesh_pred}')
+    # print(f'save path: {save_path}')
 
-    tsdf_pred.save(os.path.join(save_path, '%s.npz'%scene))
-    mesh_pred.export(os.path.join(save_path, '%s.ply'%scene))
-    mesh_pred.export(os.path.join(save_path, '%s.obj'%scene))
+    # tsdf_pred.save(os.path.join(save_path, '%s.npz'%scene))
+    tsdf_pred.save(os.path.join(save_path, f'{scene}_{num_frames}.npz'))
+    mesh_pred.export(os.path.join(save_path, f'{scene}_{num_frames}.ply'))
+    mesh_pred.export(os.path.join(save_path, f'{scene}_{num_frames}.obj'))
 
 
 
@@ -120,8 +133,8 @@ def main():
     parser.add_argument("--num_frames", default=-1, type=int,
                         help="number of frames to use (-1 for all)")
     parser.add_argument("--voxel_dim", nargs=3, default=[208, 208, 80], type=int, # saving GPU memory
-    # parser.add_argument("--voxel_dim", nargs=3, default=[416, 416, 80], type=int,
-    # parser.add_argument("--voxel_dim", nargs=3, default=[-1, -1, -1], type=int,  # original
+                        # parser.add_argument("--voxel_dim", nargs=3, default=[416, 416, 80], type=int,
+                        # parser.add_argument("--voxel_dim", nargs=3, default=[-1, -1, -1], type=int,  # original
                         help="override voxel dim")
     parser.add_argument("--save_path", required=True)
     args = parser.parse_args()
@@ -149,10 +162,11 @@ def main():
 
     if args.num_frames>-1:
         save_path = '%s_%d'%(save_path, args.num_frames)
-    os.makedirs(save_path, exist_ok=True)
+    Path(save_path).mkdir(parents=True, exist_ok=True)
 
     for i, info_file in enumerate(info_files):
         # run model on each scene
+        print(f'info file {i + 1 / len(info_files)}')
         process(info_file, model, args.num_frames, save_path, i, len(info_files))
 
     # cloud = open3d.cuda.pybind.io.read_point_cloud("results/release/semseg/test_final/sample1.ply") # Read the point cloud

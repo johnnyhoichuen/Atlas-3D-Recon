@@ -75,11 +75,26 @@ class IntrinsicsPoseToProjection(object):
             rotation = pose[:3, :3]
             translation = pose[:3, 3]
 
-            # x, y, z correspond to the ones in meshlab as well
-            translation[0] = translation[0] + 2  # x
+            # # iphone
+            # # x, y, z correspond to the ones in meshlab as well
+            # translation[0] = translation[0] + 2  # x
+            # translation[1] = translation[1] + 4  # y
+            # translation[2] = translation[2] + 1  # z
+
+            # ust_conf_3 scale = 0.8
+            translation[0] = translation[0] + 3  # x
             translation[1] = translation[1] + 4  # y
-            # translation[2] = translation[2] - 0.3  # z
             translation[2] = translation[2] + 1  # z
+
+            # ust_conf_3 scale = 1
+            # translation[0] = translation[0] + 3  # x
+            # translation[1] = translation[1] + 4.5  # y
+            # translation[2] = translation[2] + 1.2  # z
+
+            # # filtering range experiment
+            # translation[0] = translation[0] + 5  # x
+            # translation[1] = translation[1] + 5  # y
+            # translation[2] = translation[2] + 5  # z
 
             # rot_x_90 = torch.tensor([[1, 0, 0], [0, 0, -1], [0, 1, 0]], dtype=torch.float)
             # rotation = rotation.dot(flip_yz_matrix)

@@ -1,22 +1,55 @@
 dataset: 'ust_conf3_icp_opvs'
+
+# scale = 1, fov 90
+#img_dir: 'ust_conf_3'
+#pose_dir: 'opvs_original'
+#fine_tuned_params: [2.6, 3.0, 0.65, 1.00] # contains the [tx, ty, tz, scale] with the best f-score
+#manual_scale: 1.0 # for opvs_original
+#scales: [1.0, 1.05, 1.10] # for opvs_original
+
+## original, scale 0.8, fov 90
 img_dir: 'ust_conf_3'
 pose_dir: 'opvs_s0.8'
-gt_path_prefix: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD' # real path: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD.ply'
-#gt_path: '' # gt_path_prefix + fine_tune_params + .ply
+fine_tuned_params: [2.6, 3.0, 0.65, 0.65] # contains the [tx, ty, tz, scale] with the best f-score
+manual_scale: 0.65 # for opvs_s0.8
+scales: [0.6, 0.65, 0.7] # for opvs_s0.8
 
-# gt fine tuning
-# set this as prefix instead of full path as fine-tune params will be added in the name
-# pred_path: 'results/ust_conf3_icp_opvs/opvs_s0.8/ust_conf3_icp_opvs.ply' # = "results/{dataset}/{pose_dir}/{dataset}.ply"
+##
+# if you wanna filter out the photographer -> go to sample.py
+##
+
+#fine_tuned_params: [2.6, 3.0, 0.65, 0.65] # contains the [tx, ty, tz, scale] with the best f-score
+# 2. filtering out photographer, scale 1, (failed to generate proper 3d mesh)
+#img_dir: 'opvs_r100-170_fov90'
+#pose_dir: 'opvs_r100-170_fov90'
+# 3. get range 0-90 only, as 2. failed. (failed to generate proper 3d mesh)
+#img_dir: 'opvs_r100-330_fov90'
+#pose_dir: 'opvs_r100-330_fov90'
+# 4. normal range but remove 10 (no need to use this. just use remove_item in sample.py)
+#img_dir: 'ust_conf_3_debug_1'
+#pose_dir: 'opvs_s0.8_debug_1'
+
+
+gt_density: 'MD'
+gt_path_prefix: 'data/ust_conf3_icp_opvs/gt/ust-conf-3' # real path: 'data/ust_conf3_icp_opvs/gt/ust-conf-3-LD.ply'
+# define gt_path as '{gt_path_prefix}_{fine_tuned_params[:3]}_s{fine_tuned_params[3]}.ply'
+# define pred_path as 'results/{dataset}/{pose_dir}/{dataset}.ply'
 
 # manual adjustment of GT (do this before fine-tuning)
 manual_rotate: [90, -5, 0] # x, z, y axis in meshlab
 manual_translate: [2.6, 3.0, 0.65]
-manual_scale: [0.65] # for pred opvs_s0.8
+#manual_scale: 0.65 # for opvs_s0.8
+#manual_scale: 1.0 # for opvs_original
 
 # fine-tuning transform params
 x_range: [2.55, 2.6, 2.65]
 y_range: [2.95, 3.0, 3.05]
 z_range: [0.6, 0.65, 0.7]
-scales: [0.6, 0.65, 0.7] # for pred opvs_s0.8
+#scales: [0.6, 0.65, 0.7] # for opvs_s0.8
+#scales: [1.0, 1.05, 1.10] # for opvs_original
 
-fine_tuned_params: [2.6, 3.0, 0.65, 0.65] # contains the [tx, ty, tz, scale] with the best f-score
+# for debugging fine_tune() in finetune_gt.py
+#x_range: [2.6]
+#y_range: [3.0]
+#z_range: [0.65]
+#scales: [0.65]

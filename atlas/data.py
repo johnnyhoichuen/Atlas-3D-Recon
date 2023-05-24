@@ -104,6 +104,8 @@ class SceneDataset(torch.utils.data.Dataset):
             num_frames: number of evenly spaced frames to use (-1 for all)
         """
 
+        print(f'scanet dataset class for single scene is used!!')
+
         self.info = load_info_json(info_file)
         self.transform = transform
         self.frame_types = frame_types
@@ -113,9 +115,27 @@ class SceneDataset(torch.utils.data.Dataset):
         # select evenly spaced subset of frames
         if num_frames>-1:
             length = len(self.info['frames'])
+            # # print(f"type of original self.info['frames']: {type(self.info['frames'])}")  # list
+            # print(f"length of original self.info['frames']: {length}")
+            # for i in range(0, 5):
+            #     print(self.info['frames'][i])
+
+            # update info['frames'] based on num_frames required
             inds = np.linspace(0, length-1, num_frames, dtype=int)
             self.info['frames'] = [self.info['frames'][i] for i in inds]
+            # print(f"type of original self.info['frames']: {type(self.info['frames'])}")  # list
+            # print(f"length of updated self.info['frames']: {len(self.info['frames'])}")
+            # for i in range(0, 5):
+            #     print(self.info['frames'][i])
 
+            # print(f'self.info[frames]: {self.info["frames"]}')
+            # exit()
+
+        # check original info['frames']
+        # print(f"type of original self.info['frames']: {type(self.info['frames'])}")
+        # print(f"length of original self.info['frames']: {len(self.info['frames'])}")
+        # for i in range(0, 5):
+        #     print(self.info['frames'][i])
 
     def __len__(self):
         return len(self.info['frames'])
@@ -203,8 +223,7 @@ class ScenesDataset(torch.utils.data.Dataset):
 
         frame_ids = self.get_frame_ids(info)
         # print(frame_ids)
-        frames = [map_frame(info['frames'][i], self.frame_types)
-                  for i in frame_ids]
+        frames = [map_frame(info['frames'][i], self.frame_types) for i in frame_ids]
 
         data = {'dataset': info['dataset'],
                 'scene': info['scene'],
