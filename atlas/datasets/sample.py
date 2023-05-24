@@ -74,9 +74,18 @@ def prepare_sample_scene(img_dir, pose_dir, dataset, dataset_path, path_meta, ve
     frame_ids = [int(os.path.splitext(frame)[0]) for frame in frame_ids]
     frame_ids = sorted(frame_ids)
 
+    # another way to filter out unwanted image
+    removed_item = [i for i in range(1, 2000, 4)] # opvs 90-fov filter photographer
+    # removed_item = []
+    # print(f'removed item, length: {len(removed_item)}, {removed_item}')
+    total_prepared = 0
+
     for i, frame_id in enumerate(frame_ids):
-        if verbose>1 and i%25==0:
-            print('preparing %s frame %d/%d' % (dataset, i, len(frame_ids)))
+        if frame_id in removed_item:
+            continue
+
+        if (verbose > 1 and i % 1000 == 0) or i == len(frame_ids) - 1:
+            print('preparing %s frame %d/%d' % (dataset, i + 1, len(frame_ids)))
 
         if dataset == "ust_conf_iphone":
             # load intrinsics for iphone (diff intrinsics for each frame, but only applicable to iphone)
@@ -102,6 +111,10 @@ def prepare_sample_scene(img_dir, pose_dir, dataset, dataset_path, path_meta, ve
                  'pose': pose.tolist(),
                  }
         data['frames'].append(frame)
+
+        total_prepared += 1
+
+    print(f'{total_prepared} frames prepared / {len(frame_ids)} available frames')
 
     os.makedirs(os.path.join(path_meta), exist_ok=True)
     json.dump(data, open(os.path.join(path_meta, 'info.json'), 'w'))
