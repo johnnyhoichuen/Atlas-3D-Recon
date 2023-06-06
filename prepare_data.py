@@ -338,8 +338,8 @@ if __name__ == "__main__":
                 os.path.join(args.path, 'sample'),
                 os.path.join(args.path_meta, 'sample'),
             )
+        print('sample not supported')
         exit()
-
     elif args.dataset == 'scannet':
         prepare_scannet(
             os.path.join(args.path, 'scannet'),
@@ -349,6 +349,8 @@ if __name__ == "__main__":
             args.test,
             args.max_depth
         )
+        print('scannet not supported')
+        exit()
     else:  # custom dataset
         print(f'using dataset: {args.dataset}')
         prepare_sample_scene(
@@ -358,14 +360,3 @@ if __name__ == "__main__":
             dataset_path=os.path.join(args.path, args.dataset),
             path_meta=os.path.join(args.path_meta, args.dataset),
         )
-
-    # elif args.dataset == 'rio':
-    #     prepare_rio(
-    #         os.path.join(args.path, 'RIO'),
-    #         os.path.join(args.path_meta, 'RIO'),
-    #         i,
-    #         n
-    #     )
-
-    # else:
-    #     raise NotImplementedError('unknown dataset %s'%args.dataset)

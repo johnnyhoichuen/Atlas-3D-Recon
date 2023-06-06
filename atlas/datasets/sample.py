@@ -59,7 +59,7 @@ def prepare_sample_scene(img_dir, pose_dir, dataset, dataset_path, path_meta, ve
     if verbose>0:
         print('preparing %s' % dataset)
 
-    data = {'dataset': 'sample',
+    data = {'dataset': dataset,
             'path': dataset_path,
             'scene': dataset,
             'frames': []
@@ -70,13 +70,14 @@ def prepare_sample_scene(img_dir, pose_dir, dataset, dataset_path, path_meta, ve
         print('loading dataset-wide intrinsics')
         intrinsics = np.loadtxt(os.path.join(dataset_path, 'intrinsics.txt'))  # intrinsics are unified under the /data folder
 
+    # extract the id (which img & pose should share)
     frame_ids = os.listdir(os.path.join(dataset_path, f'color/{img_dir}'))
     frame_ids = [int(os.path.splitext(frame)[0]) for frame in frame_ids]
     frame_ids = sorted(frame_ids)
 
     # another way to filter out unwanted image
-    removed_item = [i for i in range(1, 2000, 4)] # opvs 90-fov filter photographer
-    # removed_item = []
+    # removed_item = [i for i in range(1, 2000, 4)] # opvs 90-fov filter photographer
+    removed_item = []
     # print(f'removed item, length: {len(removed_item)}, {removed_item}')
     total_prepared = 0
 
@@ -89,7 +90,7 @@ def prepare_sample_scene(img_dir, pose_dir, dataset, dataset_path, path_meta, ve
 
         if dataset == "ust_conf_iphone":
             # load intrinsics for iphone (diff intrinsics for each frame, but only applicable to iphone)
-            intrinsics = np.loadtxt(os.path.join(dataset_path, "intrinsics" , '%05d.txt' % frame_id))
+            intrinsics = np.loadtxt(os.path.join(dataset_path, "intrinsics", '%05d.txt' % frame_id))
 
             # load pose & image
             pose = np.loadtxt(os.path.join(dataset_path, f'pose/{pose_dir}', '%05d.txt' % frame_id))

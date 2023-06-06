@@ -75,26 +75,28 @@ class IntrinsicsPoseToProjection(object):
             rotation = pose[:3, :3]
             translation = pose[:3, 3]
 
-            # # iphone
-            # # x, y, z correspond to the ones in meshlab as well
-            # translation[0] = translation[0] + 2  # x
-            # translation[1] = translation[1] + 4  # y
-            # translation[2] = translation[2] + 1  # z
+            if data['dataset'] == 'ust_conf_iphone':
+                # print(f'using iphone translation setup in transform.py')
+                # x, y, z correspond to the ones in meshlab as well
+                translation[0] = translation[0] + 2  # x
+                translation[1] = translation[1] + 4  # y
+                translation[2] = translation[2] + 1  # z
+            elif data['dataset'] == 'ust_conf3_icp_opvs' or data['dataset'] == 'ust_conf3_fov_test':
+                # print(f'using ust_conf3 translation setup in transform.py')
+                # ust_conf_3 scale = 0.8
+                translation[0] = translation[0] + 3  # x
+                translation[1] = translation[1] + 4  # y
+                translation[2] = translation[2] + 1  # z
 
-            # ust_conf_3 scale = 0.8
-            translation[0] = translation[0] + 3  # x
-            translation[1] = translation[1] + 4  # y
-            translation[2] = translation[2] + 1  # z
+                # ust_conf_3 scale = 1
+                # translation[0] = translation[0] + 3  # x
+                # translation[1] = translation[1] + 4.5  # y
+                # translation[2] = translation[2] + 1.2  # z
 
-            # ust_conf_3 scale = 1
-            # translation[0] = translation[0] + 3  # x
-            # translation[1] = translation[1] + 4.5  # y
-            # translation[2] = translation[2] + 1.2  # z
-
-            # # filtering range experiment
-            # translation[0] = translation[0] + 5  # x
-            # translation[1] = translation[1] + 5  # y
-            # translation[2] = translation[2] + 5  # z
+                # # filtering range experiment
+                # translation[0] = translation[0] + 5  # x
+                # translation[1] = translation[1] + 5  # y
+                # translation[2] = translation[2] + 5  # z
 
             # rot_x_90 = torch.tensor([[1, 0, 0], [0, 0, -1], [0, 1, 0]], dtype=torch.float)
             # rotation = rotation.dot(flip_yz_matrix)

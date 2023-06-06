@@ -13,7 +13,7 @@ from atlas.evaluation import eval_mesh
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="prepare data + inference")
     parser.add_argument("--config", help="config file of the dataset")
-    parser.add_argument("--num_frames_inference", type=int, default=2)
+    parser.add_argument("--num_frames_inference", type=int, default=-1)
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
